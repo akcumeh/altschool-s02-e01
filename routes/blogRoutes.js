@@ -4,7 +4,7 @@ const blogController = require('../controllers/blogController');
 const auth = require('../middleware/auth');
 
 router.get('/blogs', blogController.getPublishedBlogs);
-router.get('/blogs/id', blogController.getBlogById);
+router.get('/blogs/:id', blogController.getBlogById);
 
 router.post('/blogs', auth, blogController.createPost);
 router.get('/user/blogs', auth, blogController.getUserBlogs);
