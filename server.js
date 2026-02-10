@@ -14,6 +14,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api', blogRoutes);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`server is running on port ${PORT}`);
-});
+
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(PORT, () => {
+        console.log(`server is running on port ${PORT}`);
+    });
+}
+
+module.exports = app;

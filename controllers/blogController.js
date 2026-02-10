@@ -45,9 +45,6 @@ exports.updateBlog = async (req, res) => {
             return res.status(404).json({ error: 'This post could not be found.' });
         }
         
-        if (post.state === 'published') {
-            return res.status(400).json({ error: 'Sorry, you can\'t edit a published post (for now).' });
-        }
 
         if (updates.body) {
             updates.reading_time = calcReadingTime(updates.body);
@@ -103,15 +100,29 @@ exports.deleteBlog = async (req, res) => {
 
 exports.getUserBlogs = async (req, res) => {
     try {
-        const { state } = req.query;
+        const {
+            state,
+            page = 1,
+            limit = 20
+        } = req.query;
         const filter = { author: req.userId };
 
         if (state) {
             filter.state = state;
         }
 
-        const posts = await Post.find(filter);
-        res.json(posts);
+        const posts = await Post.find(filter)
+            .sort({ createdAt: -1 })
+            .limit(limit * 1)
+            .skip((page - 1) * limit);
+
+        const count = await Post.countDocuments(filter);
+
+        res.json({
+            posts,
+            totalPages: Math.ceil(count / limit),
+            currentPage: page
+        });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
