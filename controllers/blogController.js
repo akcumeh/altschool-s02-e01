@@ -1,9 +1,15 @@
 const Post = require('../models/Post');
 const calcReadingTime = require('../utils/readingTimeCalculator');
+const { blogSchema, updateBlogSchema } = require('../utils/validator');
 
 exports.createPost = async (req, res) => {
     try {
-        const { title, description, tags, body } = req.body;
+        const { e, value } = blogSchema.validate(req.body);
+        if (e) {
+            return res.status(400).json({ error: e.details[0].message });
+        }
+
+        const { title, description, tags, body } = value;
 
         const reading_time = calcReadingTime(body);
 
@@ -25,8 +31,13 @@ exports.createPost = async (req, res) => {
 
 exports.updateBlog = async (req, res) => {
     try {
+        const { e, value } = updateBlogSchema.validate(req.body);
+        if (e) {
+            return res.status(400).json({ error: e.details[0].message });
+        }
+
         const { id } = req.params;
-        const updates = req.body;
+        const updates = value;
 
         const post = await Post.findOne({ _id: id, author: req.userId });
 
@@ -51,18 +62,21 @@ exports.updateBlog = async (req, res) => {
     }
 };
 
-exports.updateBlogState = async (req, res) => {
+exports.publishBlog = async (req, res) => {
     try {
         const { id } = req.params;
-        const { state } = req.body;
-        
+
         const post = await Post.findOne({ _id: id, author: req.userId });
-        
+
         if (!post) {
             return res.status(404).json({ error: 'This post could not be found.' });
         }
-        
-        post.state = state;
+
+        if (post.state === 'published') {
+            return res.status(400).json({ error: 'This post is already published.' });
+        }
+
+        post.state = 'published';
         await post.save();
 
         res.json(post);
@@ -134,9 +148,7 @@ exports.getPublishedBlogs = async (req, res) => {
         }
 
         if (tags) {
-            filter.tags = {
-                $in: tags.split(',')
-            };
+            filter.tags = { $in: tags.split(',') };
         }
 
         const sortField = orderBy === 'read_count' ? 'read_count' : orderBy === 'reading_time' ? 'reading_time' : 'createdAt';
