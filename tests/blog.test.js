@@ -8,7 +8,6 @@ describe('Blogging API Tests', () => {
     let authToken;
     let userId;
     let blogId;
-    let user2Token;
 
     beforeAll(async () => {
         process.env.NODE_ENV = 'test';
@@ -36,9 +35,10 @@ describe('Blogging API Tests', () => {
             const response = await request(app)
                 .post('/api/auth/signup')
                 .send({
-                    email: 'test@example.com',
+                    email: 'tester@example.com',
                     first_name: 'Test',
                     last_name: 'User',
+                    username: 'tester',
                     password: 'password123'
                 });
 
@@ -50,9 +50,10 @@ describe('Blogging API Tests', () => {
             const response = await request(app)
                 .post('/api/auth/signup')
                 .send({
-                    email: 'test@example.com',
+                    email: 'tester@example.com',
                     first_name: 'Test',
                     last_name: 'User',
+                    username: 'tester',
                     password: 'password123'
                 });
 
@@ -64,7 +65,7 @@ describe('Blogging API Tests', () => {
             const response = await request(app)
                 .post('/api/auth/signin')
                 .send({
-                    email: 'test@example.com',
+                    email: 'tester@example.com',
                     password: 'password123'
                 });
 
@@ -73,7 +74,7 @@ describe('Blogging API Tests', () => {
             authToken = response.body.token;
 
             // Get user ID for later tests
-            const user = await User.findOne({ email: 'test@example.com' });
+            const user = await User.findOne({ email: 'tester@example.com' });
             userId = user._id;
         });
 
@@ -81,7 +82,7 @@ describe('Blogging API Tests', () => {
             const response = await request(app)
                 .post('/api/auth/signin')
                 .send({
-                    email: 'test@example.com',
+                    email: 'tester@example.com',
                     password: 'wrongpassword'
                 });
 
@@ -94,11 +95,11 @@ describe('Blogging API Tests', () => {
         test('POST /api/blogs - should create a blog in draft state', async () => {
             const response = await request(app)
                 .post('/api/blogs')
-                .set('Authorization', `Bearer ${authToken}`)
+                .set('Authorization', `${authToken}`)
                 .send({
                     title: 'Test Blog Post',
                     description: 'This is a test blog post',
-                    tags: ['test', 'nodejs'],
+                    tags: "test,nodejs",
                     body: 'This is the body of the test blog post with enough content to calculate reading time.'
                 });
 
@@ -115,6 +116,8 @@ describe('Blogging API Tests', () => {
                 .post('/api/blogs')
                 .send({
                     title: 'Unauthorized Blog',
+                    description: "a blog that will fail.",
+                    tags: "failed,blog",
                     body: 'This should fail'
                 });
 
@@ -124,7 +127,7 @@ describe('Blogging API Tests', () => {
         test('PUT /api/blogs/:id - should update blog by owner', async () => {
             const response = await request(app)
                 .put(`/api/blogs/${blogId}`)
-                .set('Authorization', `Bearer ${authToken}`)
+                .set('Authorization', `${authToken}`)
                 .send({
                     title: 'Updated Test Blog Post',
                     body: 'Updated body content'
@@ -137,7 +140,7 @@ describe('Blogging API Tests', () => {
         test('PATCH /api/blogs/:id/publish - should publish a blog', async () => {
             const response = await request(app)
                 .patch(`/api/blogs/${blogId}/publish`)
-                .set('Authorization', `Bearer ${authToken}`);
+                .set('Authorization', `${authToken}`);
 
             expect(response.status).toBe(200);
             expect(response.body.state).toBe('published');
@@ -146,7 +149,7 @@ describe('Blogging API Tests', () => {
         test('PATCH /api/blogs/:id/publish - should not publish already published blog', async () => {
             const response = await request(app)
                 .patch(`/api/blogs/${blogId}/publish`)
-                .set('Authorization', `Bearer ${authToken}`);
+                .set('Authorization', `${authToken}`);
 
             expect(response.status).toBe(400);
             expect(response.body.error).toContain('already published');
@@ -198,7 +201,7 @@ describe('Blogging API Tests', () => {
         test('GET /api/user/blogs - should return logged-in user blogs', async () => {
             const response = await request(app)
                 .get('/api/user/blogs')
-                .set('Authorization', `Bearer ${authToken}`);
+                .set('Authorization', `${authToken}`);
 
             expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('posts');
@@ -208,7 +211,7 @@ describe('Blogging API Tests', () => {
         test('GET /api/user/blogs - should filter by state', async () => {
             const response = await request(app)
                 .get('/api/user/blogs?state=published')
-                .set('Authorization', `Bearer ${authToken}`);
+                .set('Authorization', `${authToken}`);
 
             expect(response.status).toBe(200);
             expect(response.body.posts.every(post => post.state === 'published')).toBe(true);
@@ -217,7 +220,7 @@ describe('Blogging API Tests', () => {
         test('GET /api/user/blogs - should support pagination', async () => {
             const response = await request(app)
                 .get('/api/user/blogs?page=1&limit=5')
-                .set('Authorization', `Bearer ${authToken}`);
+                .set('Authorization', `${authToken}`);
 
             expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('currentPage');
@@ -227,7 +230,7 @@ describe('Blogging API Tests', () => {
         test('DELETE /api/blogs/:id - should delete blog by owner', async () => {
             const response = await request(app)
                 .delete(`/api/blogs/${blogId}`)
-                .set('Authorization', `Bearer ${authToken}`);
+                .set('Authorization', `${authToken}`);
 
             expect(response.status).toBe(200);
             expect(response.body).toHaveProperty('message');
@@ -236,7 +239,7 @@ describe('Blogging API Tests', () => {
         test('DELETE /api/blogs/:id - should not delete non-existent blog', async () => {
             const response = await request(app)
                 .delete(`/api/blogs/${blogId}`)
-                .set('Authorization', `Bearer ${authToken}`);
+                .set('Authorization', `${authToken}`);
 
             expect(response.status).toBe(404);
         });
@@ -250,7 +253,7 @@ describe('Blogging API Tests', () => {
                 body: 'Learning JavaScript fundamentals',
                 author: userId,
                 state: 'published',
-                tags: ['javascript', 'tutorial'],
+                tags: 'javascript,tutorial',
                 reading_time: 5,
                 read_count: 10
             });
