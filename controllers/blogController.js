@@ -4,9 +4,10 @@ const { blogSchema, updateBlogSchema } = require('../utils/validator');
 
 exports.createPost = async (req, res) => {
     try {
-        const { e, value } = blogSchema.validate(req.body);
-        if (e) {
-            return res.status(400).json({ error: e.details[0].message });
+        const { error, value } = blogSchema.validate(req.body);
+        console.log(error, value);
+        if (error) {
+            return res.status(400).json({ error: error.details[0].message });
         }
 
         const { title, description, tags, body } = value;
@@ -16,7 +17,7 @@ exports.createPost = async (req, res) => {
         const blog = new Post({
             title,
             description,
-            tags,
+            tags: tags.split(','),
             body,
             author: req.userId,
             reading_time
@@ -31,9 +32,9 @@ exports.createPost = async (req, res) => {
 
 exports.updateBlog = async (req, res) => {
     try {
-        const { e, value } = updateBlogSchema.validate(req.body);
-        if (e) {
-            return res.status(400).json({ error: e.details[0].message });
+        const { error, value } = updateBlogSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ error: error.details[0].message });
         }
 
         const { id } = req.params;
@@ -145,13 +146,19 @@ exports.getPublishedBlogs = async (req, res) => {
         if (author) {
             const User = require('../models/User');
             const authorUser = await User.findOne({
-                $or: [
-                    { first_name: new RegExp(author, 'i') },
-                    { last_name: new RegExp(author, 'i') }
-                ]
+                username: new RegExp(author, 'i')
             });
-
-            if (authorUser) filter.author = authorUser._id;
+            console.log(authorUser);
+            
+            if (authorUser) {
+                filter.author = authorUser._id
+            } else {
+                res.status(200).json({
+                    "posts": [],
+                    "totalPages": 0,
+                    "currentPage": 1
+                });
+            };
         }
 
         if (title) {

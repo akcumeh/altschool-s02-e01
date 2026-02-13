@@ -5,12 +5,12 @@ const { signupSchema, signinSchema } = require('../utils/validator');
 
 exports.signup = async (req, res) => {
     try {
-        const { e, value } = signupSchema.validate(req.body);
-        if (e) {
-            return res.status(400).json({ error: e.details[0].message });
+        const { error, value } = signupSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ error: error.details[0].message });
         }
 
-        const { email, first_name, last_name, password } = value;
+        const { email, first_name, last_name, username,  password } = value;
 
         const hashedPwd = await bcrypt.hash(password, 10);
 
@@ -18,10 +18,13 @@ exports.signup = async (req, res) => {
             email,
             first_name,
             last_name,
+            username,
             password: hashedPwd
         });
 
-        try {} catch (e) {
+        try {
+            await user.save();
+        } catch (e) {
             if (e.code === 11000) {
                 return res.status(400).json({ error: "This email is already in use." })
             }
@@ -36,9 +39,9 @@ exports.signup = async (req, res) => {
 
 exports.signin = async (req, res) => {
     try {
-        const { e, value } = signupSchema.validate(req.body);
-        if (e) {
-            return res.status(400).json({ error: e.details[0].message });
+        const { error, value } = signinSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ error: error.details[0].message });
         }
 
         const { email, password } = value;
