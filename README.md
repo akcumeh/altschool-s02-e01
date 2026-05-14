@@ -40,21 +40,7 @@ npm install
 
 ### 3. Set Up Environment Variables
 
-Option 1: Create a `.env` file in the root directory and add the necessary variables. In your terminal:
-
-```bash
-touch .env
-```
-then open `.env` and edit:
-
-```env
-PORT=3000
-MONGODB_URI=mongodb+srv://blah.mongodb.net
-JWT_SECRET=put_anything_here
-JWT_EXPIRY=1h
-```
-
-Option 2: Just copy `.env.example` to `.env` and update the values. In your terminal:
+Copy `.env.example` to `.env` and update the values. In your terminal:
 
 ```bash
 cp .env.example .env
@@ -92,7 +78,6 @@ server is running on port 3000
 
 Base URL (local): `http://localhost:3000/api`
 
-[Postman docs](https://documenter.getpostman.com/view/38823654/2sBXcBmguN)
 
 The API is deployed on Heroku and can be accessed at:
 
@@ -106,11 +91,13 @@ All the endpoints work the same way, just replace `http://localhost:3000` with t
 
 1. Create a new request
 2. Set the method (GET, POST, PUT, PATCH, DELETE)
-3. Enter the URL (e.g., `https://your-app-name.herokuapp.com/api/auth/signup`)
+3. Enter the URL (e.g., `http://localhost:3000/api/auth/login` or `http://altsch-s02-e01-dfa405ab572e.herokuapp.com/api/auth/signup`)
 4. For protected routes, add an Authorization header:
    - Key: `Authorization`
-   - Value: `<your_token>`
+   - Value: `<your_token>` (from login)
 5. For POST/PUT requests, set the body to raw JSON and add your data
+
+See the **[Postman docs](https://documenter.getpostman.com/view/38823654/2sBXcBmguN)**.
 
 ## Project Structure
 
@@ -150,7 +137,7 @@ altschool-s02-e01/
 
 ## Author
 
-Thank you for readimg this far! Connect with me on:
+Thank you for reading this far! Connect with me on:
 
 - GitHub - [Angel Umeh](https://github.com/akcumeh)
 - Twitter - [@akcumeh](https://x.com/akcumeh)
