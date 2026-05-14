@@ -6,7 +6,7 @@ A RESTful API for a blogging platform with user authentication and blog post man
 ## Features
 
 - User authentication (signup/signin)
-- Create, read, update, publish and delete blog posts
+- Create, read, update, publish, and delete blog posts
 - Filter blogs by author, title, or tags
 - Automatic reading time calculation
 - Read count tracking
@@ -14,16 +14,14 @@ A RESTful API for a blogging platform with user authentication and blog post man
 
 ## Prerequisites
 
-Before running this project, make sure you have the following installed:
+Before running this project, make sure you have the following:
 
 - [Node.js](https://nodejs.org/) (v14 or higher)
 - [npm](https://www.npmjs.com/) (comes with Node.js)
-- [MongoDB](https://www.mongodb.com/) account or local MongoDB installation
 - [Git](https://git-scm.com/)
+- A [MongoDB](https://www.mongodb.com/) account or local MongoDB installation
 
 ## Getting Started
-
-Follow these steps to run the project on your local machine:
 
 ### 1. Clone the Repository
 
@@ -40,21 +38,19 @@ npm install
 
 ### 3. Set Up Environment Variables
 
-Copy `.env.example` to `.env` and update the values. In your terminal:
+Copy `.env.example` to `.env` and fill in the values:
 
 ```bash
 cp .env.example .env
 ```
-then open `.env` and change the placeholders.
 
-Your `.env` should contain
+Your `.env` should contain:
 - `MONGODB_URI`: Your MongoDB connection string (e.g., from MongoDB Atlas)
-- `JWT_SECRET`: A random string that will be used for JWT generation
-- `JWT_EXPIRY`: When you want the JWT to expire (e.g., 1h, 24h, 7d)
+- `JWT_SECRET`: A random string used for JWT generation
+- `JWT_EXPIRY`: When you want the JWT to expire (e.g., `1h`, `24h`, `7d`)
+- `PORT`: Port to run on (default: `3000`)
 
 ### 4. Run Tests (Optional)
-
-In your terminal:
 
 ```bash
 npm test
@@ -66,38 +62,35 @@ npm test
 npm run dev
 ```
 
-The server will start on `http://localhost:3000` (or the PORT you specified in `.env`)
-
-You should see in the terminal:
-```
-connected to db
-server is running on port 3000
-```
+The server will start on `http://localhost:3000`.
 
 ## API Endpoints
 
 Base URL (local): `http://localhost:3000/api`
 
-
-The API is deployed on Heroku and can be accessed at:
-
+The API is also deployed and accessible at:
 ```
 http://altsch-s02-e01-dfa405ab572e.herokuapp.com/api/
 ```
 
-All the endpoints work the same way, just replace `http://localhost:3000` with the Heroku URL.
+### Auth
+- `POST /auth/signup` - Register a new user
+- `POST /auth/login` - Sign in and receive a JWT
+
+### Blogs
+- `GET /blogs` - Get all published blog posts (supports filtering by `author`, `title`, `tags`)
+- `POST /blogs` - Create a new blog post *(auth required)*
+- `GET /blogs/:id` - Get a single blog post
+- `PUT /blogs/:id` - Update a blog post *(auth required)*
+- `PATCH /blogs/:id/publish` - Publish a blog post *(auth required)*
+- `DELETE /blogs/:id` - Delete a blog post *(auth required)*
+- `GET /my-blogs` - Get all posts by the logged-in user *(auth required)*
 
 ### Testing with Postman or Thunder Client
 
-1. Create a new request
-2. Set the method (GET, POST, PUT, PATCH, DELETE)
-3. Enter the URL (e.g., `http://localhost:3000/api/auth/login` or `http://altsch-s02-e01-dfa405ab572e.herokuapp.com/api/auth/signup`)
-4. For protected routes, add an Authorization header:
-   - Key: `Authorization`
-   - Value: `<your_token>` (from login)
-5. For POST/PUT requests, set the body to raw JSON and add your data
+For protected routes, add an `Authorization` header with the token received from login as the value.
 
-See the **[Postman docs](https://documenter.getpostman.com/view/38823654/2sBXcBmguN)**.
+See the full **[Postman docs](https://documenter.getpostman.com/view/38823654/2sBXcBmguN)**.
 
 ## Project Structure
 
@@ -124,6 +117,25 @@ altschool-s02-e01/
 ├── Procfile               # Heroku deployment config
 └── package.json
 ```
+
+## Database Schema
+
+### User
+- `username` (string, required)
+- `email` (string, required, unique)
+- `password` (string, required, hashed)
+- `createdAt` (date, auto-generated)
+
+### Post
+- `title` (string, required, unique)
+- `description` (string)
+- `body` (string, required)
+- `author` (ref: User, required)
+- `state` (enum: `draft` | `published`, default: `draft`)
+- `tags` (array of strings)
+- `readingTime` (number, auto-calculated)
+- `readCount` (number, default: `0`)
+- `createdAt` / `updatedAt` (dates, auto-generated)
 
 ## Stack Used
 
