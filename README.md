@@ -12,6 +12,7 @@ A RESTful API for a blogging platform with user authentication and blog post man
 - Read count tracking
 - Protected routes with JWT authentication
 
+see also: [https://roadmap.sh/projects/personal-blog](https://roadmap.sh/projects/personal-blog)
 ## Prerequisites
 
 Before running this project, make sure you have the following:
